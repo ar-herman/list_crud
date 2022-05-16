@@ -18,7 +18,7 @@ class _HomescrrenState extends State<Homescrren> {
 
   void showDialogEdit(int index, Map<String, dynamic> data) {
     namaEditController.text = data["nama"];
-    skillController.text = data["skill"];
+    skillEditController.text = data["skill"];
 
     showDialog(
         context: context,
