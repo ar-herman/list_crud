@@ -1,13 +1,225 @@
 import 'package:flutter/material.dart';
+import 'package:listview_app/splash/splash.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class Homescrren extends StatefulWidget {
-  const Homescrren({Key? key}) : super(key: key);
+class Homescreen extends StatefulWidget {
+  const Homescreen({Key? key}) : super(key: key);
 
   @override
-  State<Homescrren> createState() => _HomescrrenState();
+  State<Homescreen> createState() => _HomescreenState();
 }
 
-class _HomescrrenState extends State<Homescrren> {
+class _HomescreenState extends State<Homescreen> {
+  String name = "";
+  String email = "";
+  String about = "";
+  late SharedPreferences sharedPreferences;
+
+  void initShared() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    setState(() {
+      name = sharedPreferences.getString("name")!;
+      about = sharedPreferences.getString("password")!;
+      email = sharedPreferences.getString("email")!;
+    });
+  }
+
+  void logout() {
+    sharedPreferences.clear();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const Splashscreen()),
+    );
+  }
+
+  @override
+  void initState() {
+    initShared();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.blueGrey.shade800,
+      appBar: AppBar(
+        backgroundColor: Colors.blueGrey.shade900,
+        title: const Text(
+          "List App",
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.orange,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: showDialogAdd,
+            icon: const Icon(
+              Icons.add_box,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+      // ignore: avoid_unnecessary_containers
+      body: Container(
+        margin: const EdgeInsets.all(10),
+        child: Column(
+          children: [
+            // ignore: avoid_unnecessary_containers
+            Container(
+              child: Expanded(
+                child: ListView.builder(
+                  itemCount: myData.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return listUi(index);
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      drawer: drawerWidget(),
+    );
+  }
+
+  Widget drawerWidget() {
+    return Drawer(
+      child: Container(
+        color: Colors.blueGrey,
+        child: ListView(
+          children: [
+            UserAccountsDrawerHeader(
+              currentAccountPicture: const CircleAvatar(
+                backgroundColor: Colors.yellow,
+                child: Text("Photo"),
+              ),
+              accountName: Text(
+                name,
+                style: const TextStyle(
+                  fontSize: 24,
+                  letterSpacing: 2,
+                ),
+              ),
+              accountEmail: Text(
+                email,
+                style: const TextStyle(
+                  letterSpacing: 2,
+                  fontSize: 15,
+                ),
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.blueGrey,
+              ),
+            ),
+            const Divider(
+              thickness: 2,
+              color: Colors.orange,
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.logout_outlined,
+                color: Colors.yellow,
+              ),
+              title: const Text(
+                "Logout",
+                style: TextStyle(
+                  fontSize: 24.0,
+                  color: Colors.orange,
+                  letterSpacing: 2,
+                ),
+              ),
+              onTap: logout,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget listUi(int index) {
+    return Container(
+      height: 130,
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: Colors.blueGrey,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Nama : ${myData[index]["nama"]}",
+            style: const TextStyle(
+              fontSize: 20,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          Text(
+            "Skil : ${myData[index]["skill"]}",
+            style: const TextStyle(
+              fontSize: 20,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                onPressed: () {
+                  removeIndex(index);
+                },
+                child: Row(
+                  children: const [
+                    Icon(
+                      Icons.delete,
+                      color: Colors.orange,
+                    ),
+                    Text(
+                      "Hapus",
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 20),
+              TextButton(
+                onPressed: () {
+                  showDialogEdit(index, myData[index]);
+                },
+                child: Row(
+                  children: const [
+                    Icon(
+                      Icons.edit,
+                      color: Colors.orange,
+                    ),
+                    Text(
+                      "Edit",
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   List<Map<String, dynamic>> myData = [];
 
   TextEditingController namaController = TextEditingController();
@@ -156,127 +368,5 @@ class _HomescrrenState extends State<Homescrren> {
     setState(() {
       myData.removeAt(index);
     });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.blueGrey.shade800,
-      appBar: AppBar(
-        backgroundColor: Colors.blueGrey.shade900,
-        title: const Text(
-          "List Person",
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: showDialogAdd,
-            icon: const Icon(
-              Icons.add_task,
-              color: Colors.orange,
-            ),
-          ),
-        ],
-      ),
-      // ignore: avoid_unnecessary_containers
-      body: Container(
-        margin: const EdgeInsets.all(10),
-        child: Column(
-          children: [
-            // ignore: avoid_unnecessary_containers
-            Container(
-              child: Expanded(
-                child: ListView.builder(
-                  itemCount: myData.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return Container(
-                      height: 130,
-                      margin: const EdgeInsets.only(top: 10),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: Colors.blueGrey,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Nama : ${myData[index]["nama"]}",
-                            style: const TextStyle(
-                              fontSize: 20,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          Text(
-                            "Skil : ${myData[index]["skill"]}",
-                            style: const TextStyle(
-                              fontSize: 20,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              TextButton(
-                                onPressed: () {
-                                  removeIndex(index);
-                                },
-                                child: Row(
-                                  children: const [
-                                    Icon(
-                                      Icons.delete,
-                                      color: Colors.orange,
-                                    ),
-                                    Text(
-                                      "Hapus",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 20),
-                              TextButton(
-                                onPressed: () {
-                                  showDialogEdit(index, myData[index]);
-                                },
-                                child: Row(
-                                  children: const [
-                                    Icon(
-                                      Icons.edit,
-                                      color: Colors.orange,
-                                    ),
-                                    Text(
-                                      "Edit",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
